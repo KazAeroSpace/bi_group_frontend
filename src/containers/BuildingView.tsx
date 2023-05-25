@@ -1,9 +1,4 @@
-import {
-  type FC,
-  Fragment,
-  useMemo,
-  useRef
-} from 'react'
+import { type FC, Fragment, useMemo, useRef } from 'react'
 import {
   ElevationLayer,
   FeatureLayer,
@@ -13,23 +8,19 @@ import {
   SceneLayer,
   SceneView
 } from '../components/ArcGisMap'
-import {
-  useDispatch,
-  useSelector
-} from '../store'
-import {
-  arcgisApiKeySelector,
-  arcgisTokenSelector
-} from '../slices/settingsSlice'
-import {
-  fetchLayersData,
-  layersDataSelector
-} from '../slices/layerSlice'
+import { useDispatch, useSelector } from '../store'
+import { arcgisApiKeySelector, arcgisTokenSelector } from '../slices/settingsSlice'
+import { fetchLayersData, layersDataSelector } from '../slices/layerSlice'
 import { LayerType } from '../types'
 import { useEffectOnce } from 'usehooks-ts'
 import type ArcSceneView from '@arcgis/core/views/SceneView'
 import { MapControls } from './MapControls'
-import { useFindInfoFromClickOnSceneView } from '../hooks/useFindInfoFromClickOnSceneView'
+import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer'
+import { buildImageUrl } from '../utils'
+import PointSymbol3D from '@arcgis/core/symbols/PointSymbol3D'
+import { withClickHandleSceneLayer } from '../hocs/withClickHandleSceneLayer'
+
+const ClickHandledSceneLayer = withClickHandleSceneLayer(SceneLayer)
 
 export const BuildingView: FC = () => {
   const sceneView = useRef<ArcSceneView>()
@@ -40,17 +31,22 @@ export const BuildingView: FC = () => {
   useEffectOnce(() => {
     dispatch(fetchLayersData())
   })
-  useFindInfoFromClickOnSceneView(sceneView)
-  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
   const layers = useMemo(() => {
     return layersData.map((layer) => (
             <Fragment key={layer.id}>
                 {layer.attributes.type === LayerType.SceneLayer && (
-                    <SceneLayer
+                  layer.attributes.hasClickListener
+                    ? <ClickHandledSceneLayer
                         url={layer.attributes.url}
                         apiKey={arcgisToken?.token}
                         opacity={layer.attributes.opacity}
+                        layerId={layer.id}
                     />
+                    : <SceneLayer
+                          url={layer.attributes.url}
+                          apiKey={arcgisToken?.token}
+                          opacity={layer.attributes.opacity}
+                      />
                 )}
                 {layer.attributes.type === LayerType.IntegratedMeshLayer && (
                     <IntegratedMeshLayer
@@ -65,8 +61,32 @@ export const BuildingView: FC = () => {
                         apiKey={arcgisToken?.token}
                         opacity={layer.attributes.opacity}
                         elevationInfo={{
-                          mode: 'relative-to-ground'
+                          mode: 'relative-to-scene'
                         }}
+                        screenSizePerspectiveEnabled={false}
+                        renderer={layer.attributes.icon?.data
+                          ? new SimpleRenderer({
+                            visualVariables: [],
+                            symbol: new PointSymbol3D({
+                              symbolLayers: [
+                                {
+                                  type: 'icon',
+                                  material: {
+                                    color: 'white'
+                                  },
+                                  resource: {
+                                    href: buildImageUrl(layer.attributes.icon.data.attributes)
+                                  },
+                                  size: 15,
+                                  outline: {
+                                    color: 'white',
+                                    size: 2
+                                  },
+                                  anchor: 'center'
+                                }]
+                            })
+                          })
+                          : undefined}
                     />
                 )}
                 {layer.attributes.type === LayerType.ElevationLayer && (
@@ -80,7 +100,7 @@ export const BuildingView: FC = () => {
   return (
       <MapSettings config={{ apiKey: arcgisApiKey }}>
           <Map
-              basemap="arcgis-light-gray"
+              basemap="arcgis-imagery-standard"
               ground={{
                 surfaceColor: [255, 255, 255, 0.2]
               }}
@@ -89,7 +109,8 @@ export const BuildingView: FC = () => {
                   ref={sceneView}
                   style={{
                     height: '100vh',
-                    width: '100vw'
+                    width: '100vw',
+                    overflow: 'hidden'
                   }}
                   camera={{
                     // @ts-expect-error
@@ -113,6 +134,13 @@ export const BuildingView: FC = () => {
                     background: {
                       type: 'color',
                       color: [255, 255, 255, 0.2]
+                    },
+                    atmosphere: {
+                      quality: 'high'
+                    },
+                    lighting: {
+                      date: new Date(),
+                      directShadowsEnabled: true
                     }
                   }}
               >

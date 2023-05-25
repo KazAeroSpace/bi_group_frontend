@@ -1,5 +1,5 @@
 export interface Layer {
-  objectid: string
+  objectid: string | null
   title: string | null
   type: LayerType
   url: string
@@ -7,6 +7,8 @@ export interface Layer {
   opacity: number
   loadPriority: LayerPriorityLoading
   groupLayerAttributes?: GroupLayerAttribute[]
+  icon?: { data: AttributedData<Image> | null }
+  hasClickListener: boolean
 }
 
 export interface GroupLayerAttribute {
@@ -26,6 +28,8 @@ export enum LayerType {
   IntegratedMeshLayer = 'IntegratedMeshLayer',
   TileLayer = 'TileLayer',
   SceneLayer = 'SceneLayer',
+  WMTSLayer = 'WMTSLayer',
+  BuildingSceneLayer = 'BuildingSceneLayer'
 }
 
 export enum LayerPriorityLoading {
@@ -50,7 +54,8 @@ export enum LayerAttributeType {
   number = 'number',
   boolean = 'boolean',
   date = 'date',
-  file = 'file'
+  file = 'file',
+  link = 'link'
 }
 
 export interface Pagination {

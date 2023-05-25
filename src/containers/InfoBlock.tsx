@@ -1,22 +1,9 @@
-import {
-  type FC,
-  useCallback,
-  useRef
-} from 'react'
-import {
-  clickedLayerItemSelector,
-  setClickedLayerItemId
-} from '../slices/layerSlice'
-import {
-  useDispatch,
-  useSelector
-} from '../store'
+import { type FC, useCallback, useRef } from 'react'
+import { clickedLayerItemSelector, setClickedLayerItemId } from '../slices/layerSlice'
+import { useDispatch, useSelector } from '../store'
 import { Box } from '../components/Box'
 import styled from '@emotion/styled'
-import {
-  type LayerAttribute,
-  LayerAttributeType
-} from '../types'
+import { type LayerAttribute, LayerAttributeType } from '../types'
 import { DateTime } from 'luxon'
 import { useOnClickOutside } from 'usehooks-ts'
 import { buildImageUrl } from '../utils'
@@ -27,6 +14,8 @@ const InfoBlockContainer = styled(Box)`
   position: absolute;
   top: 20px;
   right: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
 `
 
 const InfoBlockTableContent = styled.div`
@@ -67,6 +56,8 @@ export const InfoBlock: FC = () => {
         return item.numberValue?.toString() ?? ''
       case LayerAttributeType.boolean:
         return item.booleanValue ? 'YES' : 'NO'
+      case LayerAttributeType.link:
+        return <a target="_blank" href={item.stringValue ?? '#'} rel="noreferrer">Buy</a>
       default:
         return ''
     }

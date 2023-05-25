@@ -59,6 +59,7 @@ export const {
 export const fetchLayersData = createAction('layer/fetchLayersData')
 export const fetchClickedLayer = createAction<{ layerId: number, groupLayerAttributeId: number }>('layer/fetchClickedLayer')
 export const layersDataSelector = (state: RootState): Array<AttributedData<Layer>> => state.layer.data
+export const layerDataSelector = (id: number) => (state: RootState): AttributedData<Layer> | undefined => state.layer.data.find(item => item.id === id)
 export const clickedLayerSelector = (state: RootState): AttributedData<Layer> | null => state.layer.clickedLayer
 export const clickedLayerItemIdSelector = (state: RootState): number | null => state.layer.clickedLayerItemId
 export const clickedLayerItemSelector = (state: RootState): GroupLayerAttribute | null => {
@@ -76,7 +77,7 @@ startAppListening({
     let toastLoadingID
     try {
       toastLoadingID = toast.loading('Загрузка слоёв')
-      const response = await findLayers({ populate: ['groupLayerAttributes'] })
+      const response = await findLayers({ populate: ['groupLayerAttributes', 'icon'], pagination: { pageSize: 50 } })
       listenerApi.dispatch(setLayersData(response.data.data))
     } catch {
       toast.error('Ошибка при загрузки слоёв')
