@@ -13,20 +13,26 @@ import { getToken } from '../api/arcgis'
 import { type ArcGisToken } from '../types'
 
 interface State {
+  initialized: boolean
   arcgisApiKey: string
   arcgisToken: ArcGisToken | null
 }
 interface Reducers<State> extends SliceCaseReducers<State> {
+  setInitialized: CaseReducer<State, PayloadAction<boolean>>
   setArcgisToken: CaseReducer<State, PayloadAction<ArcGisToken | null>>
 }
 
 export const settingsSlice = createSlice<State, Reducers<State>, 'settings'>({
   name: 'settings',
   initialState: {
+    initialized: false,
     arcgisApiKey: process.env.REACT_APP_ARCGIS_API_KEY ?? '',
     arcgisToken: null
   },
   reducers: {
+    setInitialized: (state, action) => {
+      state.initialized = action.payload
+    },
     setArcgisToken: (state, action) => {
       state.arcgisToken = action.payload
     }
@@ -34,9 +40,11 @@ export const settingsSlice = createSlice<State, Reducers<State>, 'settings'>({
 })
 
 export const initialize = createAction('settings/initialize')
-const { setArcgisToken } = settingsSlice.actions
+
+const { setArcgisToken, setInitialized } = settingsSlice.actions
 export const arcgisApiKeySelector = (state: RootState): string => state.settings.arcgisApiKey
 export const arcgisTokenSelector = (state: RootState): ArcGisToken | null => state.settings.arcgisToken
+export const initializedSelector = (state: RootState): boolean => state.settings.initialized
 
 startAppListening({
   actionCreator: initialize,
@@ -48,8 +56,10 @@ startAppListening({
         const response = await getToken()
         listenerApi.dispatch(setArcgisToken(response.data))
       }
+      listenerApi.dispatch(setInitialized(true))
     } catch {
       toast.error('Не удалось запросить токен')
+      listenerApi.dispatch(setInitialized(false))
     }
   }
 })

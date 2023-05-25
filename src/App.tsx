@@ -1,20 +1,25 @@
 import { type FC } from 'react'
 import { BuildingView } from './containers/BuildingView'
 import { useEffectOnce } from 'usehooks-ts'
-import { useDispatch } from './store'
-import { initialize } from './slices/settingsSlice'
+import { useDispatch, useSelector } from './store'
+import { initialize, initializedSelector } from './slices/settingsSlice'
 import { Toaster } from 'react-hot-toast'
 import { InfoBlock } from './containers/InfoBlock'
 
 export const App: FC = () => {
   const dispatch = useDispatch()
+  const initialized = useSelector(initializedSelector)
   useEffectOnce(() => {
     dispatch(initialize())
   })
   return (
       <>
-          <BuildingView />
-          <InfoBlock />
+          {initialized && (
+              <>
+                  <BuildingView />
+                  <InfoBlock />
+              </>
+          )}
           <Toaster
               toastOptions={{
                 className: '',
