@@ -33,8 +33,14 @@ const TableCell = styled.td`
   vertical-align:middle;
   font-weight: 400;
   font-size: 20px;
-  color: black;
+  color: white;
   border-bottom: solid 1px rgba(255,255,255,0.5);
+`
+
+const Link = styled.a`
+  color: white;
+  text-decoration-color: white;
+  text-decoration-thickness: from-font;
 `
 
 export const InfoBlock: FC = () => {
@@ -57,7 +63,7 @@ export const InfoBlock: FC = () => {
       case LayerAttributeType.boolean:
         return item.booleanValue ? 'YES' : 'NO'
       case LayerAttributeType.link:
-        return <a target="_blank" href={item.stringValue ?? '#'} rel="noreferrer">Buy</a>
+        return <Link target="_blank" href={item.stringValue ?? '#'} rel="noreferrer">Reference</Link>
       default:
         return ''
     }
