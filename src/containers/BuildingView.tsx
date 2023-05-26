@@ -14,11 +14,12 @@ import { fetchLayersData, layersDataSelector } from '../slices/layerSlice'
 import { LayerType } from '../types'
 import { useEffectOnce } from 'usehooks-ts'
 import type ArcSceneView from '@arcgis/core/views/SceneView'
-import { MapControls } from './MapControls'
+import { MapTopLeftControls } from './MapTopLeftControls'
 import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer'
 import { buildImageUrl } from '../utils'
 import PointSymbol3D from '@arcgis/core/symbols/PointSymbol3D'
 import { withClickHandleSceneLayer } from '../hocs/withClickHandleSceneLayer'
+import { MapTopRightControls } from './MapTopRightControls'
 
 const ClickHandledSceneLayer = withClickHandleSceneLayer(SceneLayer)
 
@@ -31,6 +32,7 @@ export const BuildingView: FC = () => {
   useEffectOnce(() => {
     dispatch(fetchLayersData())
   })
+  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
   const layers = useMemo(() => {
     return layersData.map((layer) => (
             <Fragment key={layer.id}>
@@ -144,11 +146,12 @@ export const BuildingView: FC = () => {
                     }
                   }}
               >
-                  {arcgisToken && layers}
-                  <ElevationLayer
+                   {arcgisToken && layers}
+                   <ElevationLayer
                       url="https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
-                  />
-                  <MapControls />
+                   />
+                  <MapTopRightControls />
+                  <MapTopLeftControls />
               </SceneView>
           </Map>
       </MapSettings>
