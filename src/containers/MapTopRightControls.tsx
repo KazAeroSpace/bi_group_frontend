@@ -1,10 +1,8 @@
-import { memo, useRef } from 'react'
+import { type FC, useRef } from 'react'
 import { useSceneView } from '../components/ArcGisMap'
 import { useEffectOnce } from 'usehooks-ts'
+import { MapTime } from '../components/MapTime'
 import styled from '@emotion/styled'
-import { MapZoom } from '../components/MapZoom'
-import { MapCompass } from '../components/MapCompass'
-import { MapNavigation } from '../components/MapNavigation'
 
 const MapControlsContainer = styled.div`
   display: flex;
@@ -19,20 +17,18 @@ const MapControlsContainer = styled.div`
   }
 `
 
-export const MapControls = memo(() => {
+export const MapTopRightControls: FC = () => {
   const sceneView = useSceneView()
   const ref = useRef<HTMLDivElement>(null)
   useEffectOnce(() => {
-    sceneView.ui?.add(ref.current as HTMLDivElement, 'top-left')
+    sceneView.ui?.add(ref.current as HTMLDivElement, 'top-right')
     return () => {
       sceneView.ui?.remove(ref.current as HTMLDivElement)
     }
   })
   return (
-        <MapControlsContainer ref={ref}>
-            <MapZoom />
-            <MapCompass />
-            <MapNavigation />
-        </MapControlsContainer>
+      <MapControlsContainer ref={ref}>
+        <MapTime />
+      </MapControlsContainer>
   )
-})
+}
