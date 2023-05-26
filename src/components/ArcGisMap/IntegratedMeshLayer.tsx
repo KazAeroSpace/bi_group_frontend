@@ -12,15 +12,21 @@ import {
   useUpdateEffect
 } from 'usehooks-ts'
 import { getPropsDiffs } from './utils/getPropsDiffs'
+import { useGroupLayer } from './GroupLayer'
 
 type Props = NonNullable<ConstructorParameters<typeof ArcIntegratedMeshLayer>[0]>
 export const IntegratedMeshLayer = memo<Props>(forwardRef<ArcIntegratedMeshLayer | undefined, Props>((props, ref) => {
   const innerRef = useRef<ArcIntegratedMeshLayer>(new ArcIntegratedMeshLayer({ ...props }))
   const prevProps = usePrevious<Props>(props)
+  const group = useGroupLayer()
   const map = useMap()
   useImperativeHandle(ref, () => innerRef.current, [props])
   useEffectOnce(() => {
-    map.layers.add(innerRef.current)
+    if (group) {
+      group.layers.add(innerRef.current)
+    } else {
+      map.layers.add(innerRef.current)
+    }
     return () => {
       innerRef.current.destroy()
     }
