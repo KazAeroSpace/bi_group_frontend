@@ -1,7 +1,12 @@
-import { type FC, Fragment, useMemo, useRef } from 'react'
+import {
+  type FC,
+  Fragment,
+  useMemo,
+  useRef
+} from 'react'
 import {
   ElevationLayer,
-  FeatureLayer,
+  FeatureLayer, GroupLayer,
   IntegratedMeshLayer,
   Map,
   MapSettings,
@@ -9,8 +14,14 @@ import {
   SceneView
 } from '../components/ArcGisMap'
 import { useDispatch, useSelector } from '../store'
-import { arcgisApiKeySelector, arcgisTokenSelector } from '../slices/settingsSlice'
-import { fetchLayersData, layersDataSelector } from '../slices/layerSlice'
+import {
+  arcgisApiKeySelector,
+  arcgisTokenSelector
+} from '../slices/settingsSlice'
+import {
+  fetchLayersData,
+  groupLayersDataSelector
+} from '../slices/layerSlice'
 import { LayerType } from '../types'
 import { useEffectOnce } from 'usehooks-ts'
 import type ArcSceneView from '@arcgis/core/views/SceneView'
@@ -27,78 +38,82 @@ export const BuildingView: FC = () => {
   const sceneView = useRef<ArcSceneView>()
   const dispatch = useDispatch()
   const arcgisApiKey = useSelector(arcgisApiKeySelector)
-  const layersData = useSelector(layersDataSelector)
+  const groupLayersData = useSelector(groupLayersDataSelector)
   const arcgisToken = useSelector(arcgisTokenSelector)
   useEffectOnce(() => {
     dispatch(fetchLayersData())
   })
-  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
   const layers = useMemo(() => {
-    return layersData.map((layer) => (
-            <Fragment key={layer.id}>
-                {layer.attributes.type === LayerType.SceneLayer && (
-                  layer.attributes.hasClickListener
-                    ? <ClickHandledSceneLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                        layerId={layer.id}
-                    />
-                    : <SceneLayer
-                          url={layer.attributes.url}
-                          apiKey={arcgisToken?.token}
-                          opacity={layer.attributes.opacity}
-                      />
-                )}
-                {layer.attributes.type === LayerType.IntegratedMeshLayer && (
-                    <IntegratedMeshLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                    />
-                )}
-                {layer.attributes.type === LayerType.FeatureLayer && (
-                    <FeatureLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                        elevationInfo={{
-                          mode: 'relative-to-scene'
-                        }}
-                        screenSizePerspectiveEnabled={false}
-                        renderer={layer.attributes.icon?.data
-                          ? new SimpleRenderer({
-                            visualVariables: [],
-                            symbol: new PointSymbol3D({
-                              symbolLayers: [
-                                {
-                                  type: 'icon',
-                                  material: {
-                                    color: 'white'
-                                  },
-                                  resource: {
-                                    href: buildImageUrl(layer.attributes.icon.data.attributes)
-                                  },
-                                  size: 15,
-                                  outline: {
-                                    color: 'white',
-                                    size: 2
-                                  },
-                                  anchor: 'center'
-                                }]
-                            })
-                          })
-                          : undefined}
-                    />
-                )}
-                {layer.attributes.type === LayerType.ElevationLayer && (
-                    <ElevationLayer
-                        url={layer.attributes.url}
-                    />
-                )}
-            </Fragment>
-    ))
-  }, [layersData])
+    return Array.from(groupLayersData.entries())
+      .map(([group, layers]) => (
+            <GroupLayer key={group}>
+                {layers.map((layer) => (
+                    <Fragment key={layer.id}>
+                        {layer.attributes.type === LayerType.SceneLayer && (
+                          layer.attributes.hasClickListener
+                            ? <ClickHandledSceneLayer
+                                    url={layer.attributes.url}
+                                    apiKey={arcgisToken?.token}
+                                    opacity={layer.attributes.opacity}
+                                    layerId={layer.id}
+                                />
+                            : <SceneLayer
+                                    url={layer.attributes.url}
+                                    apiKey={arcgisToken?.token}
+                                    opacity={layer.attributes.opacity}
+                                />
+                        )}
+                        {layer.attributes.type === LayerType.IntegratedMeshLayer && (
+                            <IntegratedMeshLayer
+                                url={layer.attributes.url}
+                                apiKey={arcgisToken?.token}
+                                opacity={layer.attributes.opacity}
+                            />
+                        )}
+                        {layer.attributes.type === LayerType.FeatureLayer && (
+                            <FeatureLayer
+                                url={layer.attributes.url}
+                                apiKey={arcgisToken?.token}
+                                opacity={layer.attributes.opacity}
+                                elevationInfo={{
+                                  mode: 'relative-to-scene'
+                                }}
+                                screenSizePerspectiveEnabled={false}
+                                renderer={layer.attributes.icon?.data
+                                  ? new SimpleRenderer({
+                                    visualVariables: [],
+                                    symbol: new PointSymbol3D({
+                                      symbolLayers: [
+                                        {
+                                          type: 'icon',
+                                          material: {
+                                            color: 'white'
+                                          },
+                                          resource: {
+                                            href: buildImageUrl(layer.attributes.icon.data.attributes)
+                                          },
+                                          size: 15,
+                                          outline: {
+                                            color: 'white',
+                                            size: 2
+                                          },
+                                          anchor: 'center'
+                                        }]
+                                    })
+                                  })
+                                  : undefined}
+                            />
+                        )}
+                        {layer.attributes.type === LayerType.ElevationLayer && (
+                            <ElevationLayer
+                                url={layer.attributes.url}
+                            />
+                        )}
+                    </Fragment>
+                ))}
+            </GroupLayer>
+      ))
+  }, [groupLayersData])
   return (
       <MapSettings config={{ apiKey: arcgisApiKey }}>
           <Map
@@ -146,7 +161,7 @@ export const BuildingView: FC = () => {
                     }
                   }}
               >
-                   {arcgisToken && layers}
+                    {arcgisToken && layers}
                    <ElevationLayer
                       url="https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
                    />

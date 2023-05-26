@@ -1,5 +1,14 @@
-import { type FC, useCallback, useMemo, useState, useTransition } from 'react'
-import { getTrackBackground, Range } from 'react-range'
+import {
+  memo,
+  useCallback,
+  useMemo,
+  useState,
+  useTransition
+} from 'react'
+import {
+  getTrackBackground,
+  Range
+} from 'react-range'
 import { Box } from './Box'
 import { useSceneView } from './ArcGisMap'
 import { DateTime } from 'luxon'
@@ -15,20 +24,19 @@ const TimeText = styled.span`
   display: block;
   font-weight: 500;
   font-size: 20px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
 `
 
-export const MapTime: FC = () => {
+export const MapTime = memo(() => {
   const [values, setValues] = useState<number[]>([DateTime.local().get('hour')])
   const sceneView = useSceneView()
   const [, startTransition] = useTransition()
   const handleSetValues = useCallback((values: number[]) => {
     setValues(values)
     startTransition(() => {
-      const currentTime = START_OF_DAY.set({ hour: values[0] }).toJSDate()
       // @ts-expect-error
       sceneView.environment.lighting = {
-        date: currentTime,
+        date: START_OF_DAY.set({ hour: values[0] }).toJSDate(),
         directShadowsEnabled: true
       }
     })
@@ -43,7 +51,7 @@ export const MapTime: FC = () => {
           padding: 10
         }}
       >
-          <TimeText style={{ fontWeight: 400, color: 'black' }}>
+          <TimeText style={{ fontWeight: 400 }}>
               Time Changing
           </TimeText>
           <TimeText>
@@ -99,4 +107,4 @@ export const MapTime: FC = () => {
             />
       </Box>
   )
-}
+})

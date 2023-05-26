@@ -17,6 +17,7 @@ import {
   findLayer,
   findLayers
 } from '../api/layer'
+import { groupBy } from '../utils'
 
 interface State {
   data: Array<AttributedData<Layer>>
@@ -59,6 +60,12 @@ export const {
 export const fetchLayersData = createAction('layer/fetchLayersData')
 export const fetchClickedLayer = createAction<{ layerId: number, groupLayerAttributeId: number }>('layer/fetchClickedLayer')
 export const layersDataSelector = (state: RootState): Array<AttributedData<Layer>> => state.layer.data
+export const groupLayersDataSelector = (state: RootState): Map<number, Array<AttributedData<Layer>>> => {
+  return groupBy<number, AttributedData<Layer>>(
+    state.layer.data,
+    (item) => item.attributes.group?.data?.id ?? 0
+  )
+}
 export const layerDataSelector = (id: number) => (state: RootState): AttributedData<Layer> | undefined => state.layer.data.find(item => item.id === id)
 export const clickedLayerSelector = (state: RootState): AttributedData<Layer> | null => state.layer.clickedLayer
 export const clickedLayerItemIdSelector = (state: RootState): number | null => state.layer.clickedLayerItemId
@@ -76,11 +83,14 @@ startAppListening({
   effect: async (_, listenerApi) => {
     let toastLoadingID
     try {
-      toastLoadingID = toast.loading('Загрузка слоёв')
-      const response = await findLayers({ populate: ['groupLayerAttributes', 'icon'], pagination: { pageSize: 50 } })
+      toastLoadingID = toast.loading('Loading data')
+      const response = await findLayers({
+        populate: ['groupLayerAttributes', 'icon', 'group'],
+        pagination: { pageSize: 100 }
+      })
       listenerApi.dispatch(setLayersData(response.data.data))
     } catch {
-      toast.error('Ошибка при загрузки слоёв')
+      toast.error('Request error of loading data')
     } finally {
       toast.dismiss(toastLoadingID)
     }
@@ -92,16 +102,18 @@ startAppListening({
   effect: async (action, listenerApi) => {
     let toastLoadingID
     try {
-      toastLoadingID = toast.loading('Загрузка данных слоя')
+      toastLoadingID = toast.loading('Loading data')
       const { layerId, groupLayerAttributeId } = action.payload
       const clickedLayer = clickedLayerSelector(listenerApi.getState())
       if (!clickedLayer || clickedLayer.id !== layerId) {
-        const response = await findLayer(layerId, { populate: ['groupLayerAttributes.layerAttributes.file'] })
+        const response = await findLayer(layerId, {
+          populate: ['groupLayerAttributes.layerAttributes.file']
+        })
         listenerApi.dispatch(setClickedLayer(response.data.data))
       }
       listenerApi.dispatch(setClickedLayerItemId(groupLayerAttributeId))
     } catch {
-      toast.error('Ошибка при загрузки данных слоя')
+      toast.error('Request error of loading data')
     } finally {
       toast.dismiss(toastLoadingID)
     }

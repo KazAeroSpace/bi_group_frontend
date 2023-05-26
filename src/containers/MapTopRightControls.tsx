@@ -1,8 +1,9 @@
-import { type FC, useRef } from 'react'
+import { memo, useRef } from 'react'
 import { useSceneView } from '../components/ArcGisMap'
 import { useEffectOnce } from 'usehooks-ts'
 import { MapTime } from '../components/MapTime'
 import styled from '@emotion/styled'
+import { MapLayerList } from '../components/MapLayerList'
 
 const MapControlsContainer = styled.div`
   display: flex;
@@ -17,7 +18,7 @@ const MapControlsContainer = styled.div`
   }
 `
 
-export const MapTopRightControls: FC = () => {
+export const MapTopRightControls = memo(() => {
   const sceneView = useSceneView()
   const ref = useRef<HTMLDivElement>(null)
   useEffectOnce(() => {
@@ -29,6 +30,7 @@ export const MapTopRightControls: FC = () => {
   return (
       <MapControlsContainer ref={ref}>
         <MapTime />
+        <MapLayerList />
       </MapControlsContainer>
   )
-}
+})
