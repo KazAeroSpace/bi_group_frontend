@@ -9,6 +9,7 @@ import usePrevious from './hooks/usePrevious'
 import ArcSceneLayer from '@arcgis/core/layers/SceneLayer.js'
 import { useEffectOnce, useUpdateEffect } from 'usehooks-ts'
 import { getPropsDiffs } from './utils/getPropsDiffs'
+import { useGroupLayer } from './GroupLayer'
 
 type Props = NonNullable<ConstructorParameters<typeof ArcSceneLayer>[0]>
 export const SceneLayer = memo(
@@ -16,9 +17,14 @@ export const SceneLayer = memo(
     const innerRef = useRef<ArcSceneLayer>(new ArcSceneLayer({ ...props }))
     const prevProps = usePrevious<Props>({ ...props })
     const map = useMap()
+    const group = useGroupLayer()
     useImperativeHandle(ref, () => innerRef.current, [props])
     useEffectOnce(() => {
-      map.layers.add(innerRef.current)
+      if (group) {
+        group.layers.add(innerRef.current)
+      } else {
+        map.layers.add(innerRef.current)
+      }
       return () => {
         innerRef.current.destroy()
       }

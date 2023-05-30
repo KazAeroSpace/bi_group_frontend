@@ -1,104 +1,36 @@
-import { type FC, Fragment, useMemo, useRef } from 'react'
+import {
+  type FC,
+  useRef
+} from 'react'
 import {
   ElevationLayer,
-  FeatureLayer,
-  IntegratedMeshLayer,
   Map,
   MapSettings,
-  SceneLayer,
   SceneView
 } from '../components/ArcGisMap'
-import { useDispatch, useSelector } from '../store'
-import { arcgisApiKeySelector, arcgisTokenSelector } from '../slices/settingsSlice'
-import { fetchLayersData, layersDataSelector } from '../slices/layerSlice'
-import { LayerType } from '../types'
+import {
+  useDispatch,
+  useSelector
+} from '../store'
+import { arcgisApiKeySelector } from '../slices/settingsSlice'
+import { fetchLayersData } from '../slices/layerSlice'
 import { useEffectOnce } from 'usehooks-ts'
 import type ArcSceneView from '@arcgis/core/views/SceneView'
-import { MapTopLeftControls } from './MapTopLeftControls'
-import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer'
-import { buildImageUrl } from '../utils'
-import PointSymbol3D from '@arcgis/core/symbols/PointSymbol3D'
-import { withClickHandleSceneLayer } from '../hocs/withClickHandleSceneLayer'
-import { MapTopRightControls } from './MapTopRightControls'
-
-const ClickHandledSceneLayer = withClickHandleSceneLayer(SceneLayer)
+import { MapWidgetBlock } from '../components/MapWidgetBlock'
+import { MapTime } from '../components/MapTime'
+import { MapLayerList } from '../components/MapLayerList'
+import { MapZoom } from '../components/MapZoom'
+import { MapCompass } from '../components/MapCompass'
+import { MapNavigation } from '../components/MapNavigation'
+import { Layers } from './Layers'
 
 export const BuildingView: FC = () => {
   const sceneView = useRef<ArcSceneView>()
   const dispatch = useDispatch()
   const arcgisApiKey = useSelector(arcgisApiKeySelector)
-  const layersData = useSelector(layersDataSelector)
-  const arcgisToken = useSelector(arcgisTokenSelector)
   useEffectOnce(() => {
     dispatch(fetchLayersData())
   })
-  // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-  const layers = useMemo(() => {
-    return layersData.map((layer) => (
-            <Fragment key={layer.id}>
-                {layer.attributes.type === LayerType.SceneLayer && (
-                  layer.attributes.hasClickListener
-                    ? <ClickHandledSceneLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                        layerId={layer.id}
-                    />
-                    : <SceneLayer
-                          url={layer.attributes.url}
-                          apiKey={arcgisToken?.token}
-                          opacity={layer.attributes.opacity}
-                      />
-                )}
-                {layer.attributes.type === LayerType.IntegratedMeshLayer && (
-                    <IntegratedMeshLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                    />
-                )}
-                {layer.attributes.type === LayerType.FeatureLayer && (
-                    <FeatureLayer
-                        url={layer.attributes.url}
-                        apiKey={arcgisToken?.token}
-                        opacity={layer.attributes.opacity}
-                        elevationInfo={{
-                          mode: 'relative-to-scene'
-                        }}
-                        screenSizePerspectiveEnabled={false}
-                        renderer={layer.attributes.icon?.data
-                          ? new SimpleRenderer({
-                            visualVariables: [],
-                            symbol: new PointSymbol3D({
-                              symbolLayers: [
-                                {
-                                  type: 'icon',
-                                  material: {
-                                    color: 'white'
-                                  },
-                                  resource: {
-                                    href: buildImageUrl(layer.attributes.icon.data.attributes)
-                                  },
-                                  size: 15,
-                                  outline: {
-                                    color: 'white',
-                                    size: 2
-                                  },
-                                  anchor: 'center'
-                                }]
-                            })
-                          })
-                          : undefined}
-                    />
-                )}
-                {layer.attributes.type === LayerType.ElevationLayer && (
-                    <ElevationLayer
-                        url={layer.attributes.url}
-                    />
-                )}
-            </Fragment>
-    ))
-  }, [layersData])
   return (
       <MapSettings config={{ apiKey: arcgisApiKey }}>
           <Map
@@ -146,12 +78,19 @@ export const BuildingView: FC = () => {
                     }
                   }}
               >
-                   {arcgisToken && layers}
+                  <Layers />
                    <ElevationLayer
                       url="https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
                    />
-                  <MapTopRightControls />
-                  <MapTopLeftControls />
+                  <MapWidgetBlock position="top-right">
+                      <MapTime />
+                      <MapLayerList />
+                  </MapWidgetBlock>
+                  <MapWidgetBlock position="top-left">
+                      <MapZoom />
+                      <MapCompass />
+                      <MapNavigation />
+                  </MapWidgetBlock>
               </SceneView>
           </Map>
       </MapSettings>

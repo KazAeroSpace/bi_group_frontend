@@ -8,7 +8,10 @@ export interface Layer {
   loadPriority: LayerPriorityLoading
   groupLayerAttributes?: GroupLayerAttribute[]
   icon?: { data: AttributedData<Image> | null }
+  group?: { data: AttributedData<Group> | null }
   hasClickListener: boolean
+  visible: boolean
+  controlled: boolean
 }
 
 export interface GroupLayerAttribute {
@@ -106,4 +109,11 @@ export interface Image {
   provider_metadata: Record<string, any> | null
   createdAt: string
   updatedAt: string
+}
+
+export interface Group {
+  title: string
+  isToggle: boolean
+  visible: boolean
+  layers: Layer[]
 }

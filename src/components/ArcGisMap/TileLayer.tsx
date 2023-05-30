@@ -12,15 +12,21 @@ import {
   useUpdateEffect
 } from 'usehooks-ts'
 import { getPropsDiffs } from './utils/getPropsDiffs'
+import { useGroupLayer } from './GroupLayer'
 
 type Props = NonNullable<ConstructorParameters<typeof ArcTileLayer>[0]>
 export const TileLayer = memo(forwardRef<ArcTileLayer | undefined, Props>((props, ref) => {
   const innerRef = useRef<ArcTileLayer>(new ArcTileLayer({ ...props }))
   const prevProps = usePrevious<Props>(props)
+  const group = useGroupLayer()
   const map = useMap()
   useImperativeHandle(ref, () => innerRef.current, [props])
   useEffectOnce(() => {
-    map.layers.add(innerRef.current)
+    if (group) {
+      group.layers.add(innerRef.current)
+    } else {
+      map.layers.add(innerRef.current)
+    }
     return () => {
       innerRef.current.destroy()
     }
@@ -28,7 +34,7 @@ export const TileLayer = memo(forwardRef<ArcTileLayer | undefined, Props>((props
   useUpdateEffect(() => {
     const diffs = getPropsDiffs(prevProps, props)
     diffs.forEach((key) => {
-      innerRef.current?.set(key, props[key])
+      innerRef.current.set(key, props[key])
     })
   }, [props])
   return null
