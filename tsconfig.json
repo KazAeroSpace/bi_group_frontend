@@ -6,7 +6,7 @@
     "strictNullChecks": true,
 
     "baseUrl": "./src",
-    "target": "es5",
+    "target": "es2021",
     "lib": [
       "es6",
       "dom",

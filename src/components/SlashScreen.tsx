@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import styled from '@emotion/styled'
+import styled from 'styled-components'
 
 const Box = styled.div`
   display: flex;

@@ -12,7 +12,7 @@ import {
 import { Box } from './Box'
 import { useSceneView } from './ArcGisMap'
 import { DateTime } from 'luxon'
-import styled from '@emotion/styled'
+import styled from 'styled-components'
 
 const STEP = 1
 const MIN = 0
@@ -42,7 +42,9 @@ export const MapTime = memo(() => {
     })
   }, [setValues, startTransition])
   const currentTime = useMemo(() => {
-    return START_OF_DAY.set({ hour: values[0] }).toLocaleString(DateTime.TIME_24_SIMPLE)
+    return START_OF_DAY
+      .set({ hour: values[0] })
+      .toLocaleString(DateTime.TIME_24_SIMPLE)
   }, [values])
   return (
       <Box

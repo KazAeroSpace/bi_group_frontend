@@ -10,6 +10,8 @@ export interface Layer {
   icon?: { data: AttributedData<Image> | null }
   group?: { data: AttributedData<Group> | null }
   hasClickListener: boolean
+  visible: boolean
+  controlled: boolean
 }
 
 export interface GroupLayerAttribute {
@@ -112,5 +114,6 @@ export interface Image {
 export interface Group {
   title: string
   isToggle: boolean
+  visible: boolean
   layers: Layer[]
 }
