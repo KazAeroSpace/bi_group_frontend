@@ -15,15 +15,18 @@ import {
 } from '../slices/layerSlice'
 import styled from 'styled-components'
 import { CheckBox } from './CheckBox'
+import { type AttributedData, type Layer } from '../types'
 
 const Title = styled.h5`
   font-weight: 500;
   font-size: 20px;
   color: rgba(255, 255, 255, 0.8);
+  margin: 0;
 `
-export const MapLayerList = memo(() => {
+
+const GroupBlock = memo<{ groupId: number, layers: Array<AttributedData<Layer>> }>(({ groupId, layers }) => {
+  const controlledLayers = layers.filter(layer => layer.attributes.controlled)
   const dispatch = useDispatch()
-  const groupLayersData = useSelector(groupLayersDataSelector)
   const groupsData = useSelector(groupsDataSelector)
   const visibleLayersIds = useSelector(visibleLayersIdsSelector)
   const handleChangeVisibleLayer = useCallback((id: number, event: ChangeEvent<HTMLInputElement>) => {
@@ -31,33 +34,48 @@ export const MapLayerList = memo(() => {
       ? dispatch(addVisibleLayer(id))
       : dispatch(removeVisibleLayer(id))
   }, [])
+  if (!controlledLayers.length) {
+    return null
+  }
+  return (
+        <Fragment key={groupId}>
+            <div style={{ marginBottom: 10 }}>
+                <Title>
+                    {groupsData.find(group => group.id === groupId)?.attributes.title ?? 'UnGrouped'}
+                </Title>
+            </div>
+            {controlledLayers
+              .map(layer => (
+                    <CheckBox
+                        key={layer.id}
+                        label={layer.attributes.title ?? ''}
+                        type="checkbox"
+                        disabled={!layer.attributes.controlled}
+                        checked={visibleLayersIds.includes(layer.id)}
+                        onChange={handleChangeVisibleLayer.bind(this, layer.id)}
+                    />
+              ))}
+        </Fragment>
+  )
+})
+
+export const MapLayerList = memo(() => {
+  const groupLayersData = useSelector(groupLayersDataSelector)
   return (
         <Box
             style={{
               width: 300,
-              height: 500,
+              maxHeight: 500,
               overflowY: 'auto',
               padding: 10
             }}
         >
             {groupLayersData.map(([groupId, layers]) => (
-                <Fragment key={groupId}>
-                    <div style={{ marginBottom: 10 }}>
-                        <Title>
-                            {groupsData.find(group => group.id === groupId)?.attributes.title ?? 'UnGrouped'}
-                        </Title>
-                    </div>
-                    {layers.map(layer => (
-                        <CheckBox
-                            key={layer.id}
-                            label={layer.attributes.title ?? ''}
-                            type="checkbox"
-                            disabled={!layer.attributes.controlled}
-                            checked={visibleLayersIds.includes(layer.id)}
-                            onChange={handleChangeVisibleLayer.bind(this, layer.id)}
-                        />
-                    ))}
-                </Fragment>
+                <GroupBlock
+                    key={groupId}
+                    groupId={groupId}
+                    layers={layers}
+                />
             ))}
         </Box>
   )

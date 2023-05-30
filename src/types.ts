@@ -17,7 +17,9 @@ export interface Layer {
 export interface GroupLayerAttribute {
   id: number
   objectid: string
+  title: string
   layerAttributes?: LayerAttribute[]
+  heading: number | null
 }
 
 export interface AttributedData<T> {

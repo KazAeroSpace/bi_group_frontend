@@ -43,8 +43,10 @@ export function withClickHandleSceneLayer<P> (Component: ComponentType<P>): Forw
                   groupLayerAttributeId: groupLayerAttribute.id
                 }))
                 void sceneView.goTo({
+                  heading: groupLayerAttribute.heading ?? undefined,
                   target: result.graphic,
-                  tilt: 90
+                  tilt: 90,
+                  scale: groupLayerAttribute.heading ? 0 : undefined
                 })
               }
             }

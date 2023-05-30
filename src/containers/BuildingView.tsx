@@ -1,7 +1,4 @@
-import {
-  type FC,
-  useRef
-} from 'react'
+import { type FC } from 'react'
 import {
   ElevationLayer,
   Map,
@@ -15,7 +12,6 @@ import {
 import { arcgisApiKeySelector } from '../slices/settingsSlice'
 import { fetchLayersData } from '../slices/layerSlice'
 import { useEffectOnce } from 'usehooks-ts'
-import type ArcSceneView from '@arcgis/core/views/SceneView'
 import { MapWidgetBlock } from '../components/MapWidgetBlock'
 import { MapTime } from '../components/MapTime'
 import { MapLayerList } from '../components/MapLayerList'
@@ -25,7 +21,6 @@ import { MapNavigation } from '../components/MapNavigation'
 import { Layers } from './Layers'
 
 export const BuildingView: FC = () => {
-  const sceneView = useRef<ArcSceneView>()
   const dispatch = useDispatch()
   const arcgisApiKey = useSelector(arcgisApiKeySelector)
   useEffectOnce(() => {
@@ -40,7 +35,6 @@ export const BuildingView: FC = () => {
               }}
           >
               <SceneView
-                  ref={sceneView}
                   style={{
                     height: '100vh',
                     width: '100vw',
