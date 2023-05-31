@@ -1,19 +1,35 @@
-import { type FC, useCallback, useRef } from 'react'
-import { clickedLayerItemSelector, setClickedLayerItemId } from '../slices/layerSlice'
-import { useDispatch, useSelector } from '../store'
+import {
+  type FC,
+  useCallback,
+  useRef
+} from 'react'
+import {
+  clickedLayerItemSelector,
+  setClickedLayerItemId
+} from '../slices/layerSlice'
+import {
+  useSelector,
+  useDispatch
+} from '../store'
 import { Box } from '../components/Box'
 import styled from 'styled-components'
-import { type LayerAttribute, LayerAttributeType } from '../types'
+import {
+  type LayerAttribute,
+  LayerAttributeType
+} from '../types'
 import { DateTime } from 'luxon'
-import { useOnClickOutside } from 'usehooks-ts'
 import { buildImageUrl } from '../utils'
+import { IconButton } from '../components/IconButton'
+import { useOnClickOutside } from 'usehooks-ts'
+import { useExternalMapState } from '../contexts/ExternalMapState'
 
 const InfoBlockContainer = styled(Box)`
   width: 500px;
   padding: 10px;
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   max-height: 90vh;
   overflow-y: auto;
 `
@@ -43,10 +59,24 @@ const Link = styled.a`
   text-decoration-thickness: from-font;
 `
 
+const Title = styled.h5`
+  font-weight: 500;
+  font-size: 25px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+`
+
+const HeadBlock = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`
+
 export const InfoBlock: FC = () => {
   const ref = useRef<HTMLDivElement>(null)
   const dispatch = useDispatch()
   const clickedLayerItem = useSelector(clickedLayerItemSelector)
+  const { triggerTargetToGo, targetToGo } = useExternalMapState()
 
   useOnClickOutside(ref, () => {
     dispatch(setClickedLayerItemId(null))
@@ -75,6 +105,16 @@ export const InfoBlock: FC = () => {
 
   return (
       <InfoBlockContainer ref={ref}>
+          <HeadBlock>
+            <Title>
+              {clickedLayerItem.title}
+            </Title>
+            {targetToGo && (
+                <IconButton style={{ height: 15, width: 15 }} onClick={triggerTargetToGo}>
+                  <img src="/images/eye-scanner.png" alt="window" />
+                </IconButton>
+            )}
+          </HeadBlock>
           <InfoBlockTableContent>
               <InfoBlockTable cellPadding={0} cellSpacing={0} border={0}>
                   {clickedLayerItem.layerAttributes

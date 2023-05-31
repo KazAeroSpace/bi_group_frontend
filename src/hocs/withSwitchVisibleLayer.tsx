@@ -17,16 +17,16 @@ import { useIsFirstRender } from 'usehooks-ts'
 import type ArcLayer from '@arcgis/core/layers/Layer'
 
 interface Props {
-  layerId: number
+  visibleLayerId: number
 }
 
 export function withSwitchVisibleLayer<P> (Component: ComponentType<P>): MemoExoticComponent<ForwardRefExoticComponent<PropsWithoutRef<Props & P> & RefAttributes<ArcLayer | undefined>>> {
   return memo(
     forwardRef<ArcLayer | undefined, Props & P>((props, ref) => {
       const innerRef = useRef<ArcLayer>()
-      const { layerId, ...other } = props
+      const { visibleLayerId, ...other } = props
       const isFirst = useIsFirstRender()
-      const isVisible = useSelector(layerIsVisibleSelector(layerId))
+      const isVisible = useSelector(layerIsVisibleSelector(visibleLayerId))
       useImperativeHandle(ref, () => innerRef.current, [other])
       useEffect(() => {
         if (!isFirst && innerRef.current) {

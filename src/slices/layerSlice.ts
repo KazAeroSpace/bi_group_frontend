@@ -91,7 +91,7 @@ export const layersDataSelector = (state: RootState): Array<AttributedData<Layer
 export const groupLayersDataSelector = (state: RootState): Array<[number, Array<AttributedData<Layer>>]> => {
   return Array.from(
     groupBy<number, AttributedData<Layer>>(
-      state.layer.layers,
+      layersDataSelector(state),
       (item) => item.attributes.group?.data?.id ?? 0
     )
   )
