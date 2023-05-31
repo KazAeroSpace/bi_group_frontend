@@ -4,7 +4,6 @@ import { useEffectOnce } from 'usehooks-ts'
 import { useDispatch, useSelector } from './store'
 import { initialize, initializedSelector } from './slices/settingsSlice'
 import { Toaster } from 'react-hot-toast'
-import { InfoBlock } from './containers/InfoBlock'
 
 export const App: FC = () => {
   const dispatch = useDispatch()
@@ -14,13 +13,9 @@ export const App: FC = () => {
   })
   return (
       <>
-          {initialized && (
-              <>
-                  <BuildingView />
-                  <InfoBlock />
-              </>
-          )}
+          {initialized && <BuildingView />}
           <Toaster
+              position="bottom-left"
               toastOptions={{
                 className: '',
                 style: {

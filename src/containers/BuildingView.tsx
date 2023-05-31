@@ -1,6 +1,5 @@
 import { type FC } from 'react'
 import {
-  ElevationLayer,
   Map,
   MapSettings,
   SceneView
@@ -19,6 +18,8 @@ import { MapZoom } from '../components/MapZoom'
 import { MapCompass } from '../components/MapCompass'
 import { MapNavigation } from '../components/MapNavigation'
 import { Layers } from './Layers'
+import { InfoBlock } from './InfoBlock'
+import { ExternalMapStateProvider } from '../contexts/ExternalMapState'
 
 export const BuildingView: FC = () => {
   const dispatch = useDispatch()
@@ -72,19 +73,19 @@ export const BuildingView: FC = () => {
                     }
                   }}
               >
-                  <Layers />
-                   <ElevationLayer
-                      url="https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer"
-                   />
-                  <MapWidgetBlock position="top-right">
-                      <MapTime />
-                      <MapLayerList />
-                  </MapWidgetBlock>
-                  <MapWidgetBlock position="top-left">
-                      <MapZoom />
-                      <MapCompass />
-                      <MapNavigation />
-                  </MapWidgetBlock>
+                  <ExternalMapStateProvider>
+                      <Layers />
+                      <MapWidgetBlock position="top-right">
+                          <MapTime />
+                          <MapLayerList />
+                      </MapWidgetBlock>
+                      <MapWidgetBlock position="top-left">
+                          <MapZoom />
+                          <MapCompass />
+                          <MapNavigation />
+                      </MapWidgetBlock>
+                      <InfoBlock />
+                  </ExternalMapStateProvider>
               </SceneView>
           </Map>
       </MapSettings>
