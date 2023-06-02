@@ -17,3 +17,7 @@ export function groupBy<K, V> (list: V[], keyGetter: (item: V) => K): Map<K, V[]
   })
   return map
 }
+
+export const compose = <T>(...functions: Array<(param: T) => T>) => (param: T) => functions.reduceRight((accumulator, currentFunc) => currentFunc(accumulator), param)
+
+export const pipe = (...functions: any[]) => (param: any) => functions.reduce((accumulator, currentFunc) => currentFunc(accumulator), param)

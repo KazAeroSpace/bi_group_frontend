@@ -1,31 +1,42 @@
 import {
-  type FC,
-  Fragment, useCallback
+  memo,
+  Fragment,
+  useCallback
 } from 'react'
 import {
   ElevationLayer,
-  FeatureLayer,
+  FeatureLayer as DefaultFeatureLayer,
   GroupLayer,
-  IntegratedMeshLayer,
-  SceneLayer
+  IntegratedMeshLayer as DefaultIntegratedMeshLayer,
+  SceneLayer as DefaultSceneLayer
 } from '../components/ArcGisMap'
-import { type Image, LayerType } from '../types'
+import {
+  type Image,
+  LayerType
+} from '../types'
 import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer'
 import PointSymbol3D from '@arcgis/core/symbols/PointSymbol3D'
-import { buildImageUrl } from '../utils'
+import {
+  buildImageUrl,
+  pipe
+} from '../utils'
 import { withClickHandleLayer } from '../hocs/withClickHandleLayer'
 import { withSwitchVisibleLayer } from '../hocs/withSwitchVisibleLayer'
 import { useSelector } from '../store'
 import { groupLayersDataSelector } from '../slices/layerSlice'
 import { arcgisTokenSelector } from '../slices/settingsSlice'
+import { withHighlightLayer } from '../hocs/withHighlightLayer'
 
-const ClickHandledSwitchVisibleSceneLayer = withClickHandleLayer(withSwitchVisibleLayer(SceneLayer))
-const SwitchVisibleSceneLayer = withSwitchVisibleLayer(SceneLayer)
-const SwitchVisibleFeatureLayer = withSwitchVisibleLayer(FeatureLayer)
-const ClickHandledSwitchVisibleFeatureLayer = withClickHandleLayer(withSwitchVisibleLayer(FeatureLayer))
-const SwitchVisibleIntegratedMeshLayer = withSwitchVisibleLayer(IntegratedMeshLayer)
+const pipedHocs = pipe(
+  withClickHandleLayer,
+  withSwitchVisibleLayer,
+  withHighlightLayer
+)
+const SceneLayer = pipedHocs(DefaultSceneLayer)
+const FeatureLayer = pipedHocs(DefaultFeatureLayer)
+const IntegratedMeshLayer = pipedHocs(DefaultIntegratedMeshLayer)
 
-export const Layers: FC = () => {
+export const Layers = memo(() => {
   const arcgisToken = useSelector(arcgisTokenSelector)
   const groupLayersData = useSelector(groupLayersDataSelector)
   if (!arcgisToken) {
@@ -62,48 +73,27 @@ export const Layers: FC = () => {
                         {layers.map((layer) => (
                             <Fragment key={layer.id}>
                                 {layer.attributes.type === LayerType.SceneLayer && (
-                                  layer.attributes.hasClickListener
-                                    ? <ClickHandledSwitchVisibleSceneLayer
-                                            url={layer.attributes.url}
-                                            apiKey={arcgisToken.token}
-                                            opacity={layer.attributes.opacity}
-                                            clickedLayerId={layer.id}
-                                            visibleLayerId={layer.id}
-                                        />
-                                    : <SwitchVisibleSceneLayer
-                                            visibleLayerId={layer.id}
-                                            url={layer.attributes.url}
-                                            apiKey={arcgisToken.token}
-                                            opacity={layer.attributes.opacity}
-                                        />
+                                    <SceneLayer
+                                        url={layer.attributes.url}
+                                        apiKey={arcgisToken.token}
+                                        opacity={layer.attributes.opacity}
+                                        clickedLayerId={layer.id}
+                                        visibleLayerId={layer.id}
+                                        highlightLayerId={layer.id}
+                                    />
                                 )}
                                 {layer.attributes.type === LayerType.IntegratedMeshLayer && (
-                                    <SwitchVisibleIntegratedMeshLayer
+                                    <IntegratedMeshLayer
                                         visibleLayerId={layer.id}
                                         url={layer.attributes.url}
                                         apiKey={arcgisToken.token}
                                         opacity={layer.attributes.opacity}
+                                        clickedLayerId={layer.id}
                                     />
                                 )}
                                 {layer.attributes.type === LayerType.FeatureLayer && (
-                                  layer.attributes.hasClickListener
-                                    ? <ClickHandledSwitchVisibleFeatureLayer
-                                          clickedLayerId={layer.id}
-                                          visibleLayerId={layer.id}
-                                          url={layer.attributes.url}
-                                          apiKey={arcgisToken.token}
-                                          opacity={layer.attributes.opacity}
-                                          elevationInfo={{
-                                            mode: 'relative-to-scene'
-                                          }}
-                                          screenSizePerspectiveEnabled={false}
-                                          renderer={
-                                            layer.attributes.icon?.data
-                                              ? createSimpleRenderer(layer.attributes.icon.data.attributes)
-                                              : undefined
-                                          }
-                                        />
-                                    : <SwitchVisibleFeatureLayer
+                                    <FeatureLayer
+                                        clickedLayerId={layer.id}
                                         visibleLayerId={layer.id}
                                         url={layer.attributes.url}
                                         apiKey={arcgisToken.token}
@@ -128,4 +118,4 @@ export const Layers: FC = () => {
             />
         </>
   )
-}
+})
