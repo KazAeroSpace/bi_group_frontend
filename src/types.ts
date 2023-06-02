@@ -12,6 +12,8 @@ export interface Layer {
   hasClickListener: boolean
   visible: boolean
   controlled: boolean
+  highlightOnClick: boolean
+  highlightColor: string | null
 }
 
 export interface GroupLayerAttribute {

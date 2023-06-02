@@ -51,7 +51,7 @@ export const BuildingView: FC = () => {
                     heading: 360,
                     tilt: 70
                   }}
-                  viewingMode="local"
+                  viewingMode="global"
                   qualityProfile="high"
                   popup={{
                     autoOpenEnabled: false
@@ -63,6 +63,10 @@ export const BuildingView: FC = () => {
                     background: {
                       type: 'color',
                       color: [255, 255, 255, 0.2]
+                    },
+                    weather: {
+                      type: 'cloudy',
+                      cloudCover: 0.8
                     },
                     atmosphere: {
                       quality: 'high'

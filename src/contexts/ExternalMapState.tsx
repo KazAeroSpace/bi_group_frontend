@@ -10,7 +10,7 @@ import { useSceneView } from '../components/ArcGisMap'
 interface ExternalMapStateValues {
   targetToGo: any
   triggerTargetToGo: () => void
-  setTargetToGo: (camera: any) => void
+  setTargetToGo: (target: any) => void
 }
 const ExternalMapStateContext = createContext<ExternalMapStateValues>({
   targetToGo: null,
@@ -25,12 +25,12 @@ export const ExternalMapStateProvider = memo<PropsWithChildren>(({ children }) =
   })
   const triggerTargetToGo = useCallback<ExternalMapStateValues['triggerTargetToGo']>(() => {
     if (state.targetToGo) {
-      void sceneView.goTo(state.targetToGo)
+      sceneView.camera = state.targetToGo
       setState((prevState) => ({ ...prevState, targetToGo: null }))
     }
   }, [state.targetToGo, setState])
-  const setTargetToGo = useCallback<ExternalMapStateValues['setTargetToGo']>((camera) => {
-    setState((prevState) => ({ ...prevState, targetToGo: camera }))
+  const setTargetToGo = useCallback<ExternalMapStateValues['setTargetToGo']>((target) => {
+    setState((prevState) => ({ ...prevState, targetToGo: target }))
   }, [setState])
   return (
       <ExternalMapStateContext.Provider value={{ ...state, triggerTargetToGo, setTargetToGo }}>
