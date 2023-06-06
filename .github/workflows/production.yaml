@@ -1,0 +1,41 @@
+name: Release changes to staging
+
+on:
+  push:
+    branches:
+      - main
+env:
+  CI: false
+  DISABLE_ESLINT_PLUGIN: true
+  GENERATE_SOURCEMAP: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v2
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: npm
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 📦 Build project
+        run: npm run build
+
+      - name: 🚀 Deploy app
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: build
+          remote: ${{ secrets.REMOTE_SERVER_FOLDER }}
+          host: ${{ secrets.REMOTE_SERVER_IP }}
+          port: ${{ secrets.REMOTE_SERVER_PORT }}
+          username: ${{ secrets.REMOTE_SERVER_USER }}
+          password: ${{ secrets.REMOTE_SERVER_PASSWORD }}
+          rmRemote: true
+          concurrency: 20
